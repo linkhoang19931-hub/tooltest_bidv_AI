@@ -80,6 +80,12 @@
 
     <!-- Result -->
     <div id="result" class="mt-6 text-sm text-gray-800 whitespace-pre-line border-t pt-3"></div>
+
+    <!-- Summary -->
+    <div id="summaryDiv" class="mt-6 hidden">
+      <h2 class="text-lg font-bold text-indigo-700 mb-2">📊 Kết quả thống kê</h2>
+      <div id="summaryContent" class="text-sm text-gray-800"></div>
+    </div>
   </div>
 
   <script>
@@ -99,7 +105,6 @@
       ]
     };
 
-    // Load group theo bot
     function loadGroups(bot) {
       const container = document.getElementById("groupContainer");
       const select = document.getElementById("groupSelect");
@@ -117,7 +122,6 @@
       container.classList.remove("hidden");
     }
 
-    // Load test đã chạy
     async function loadTests() {
       const bot = document.getElementById("bot").value;
       const testList = document.getElementById("testList");
@@ -147,7 +151,40 @@
       loadTests();
     });
 
-    // Run
+    // Hiển thị thống kê
+    async function showSummary(bot, testId) {
+      const summaryDiv = document.getElementById("summaryDiv");
+      const contentDiv = document.getElementById("summaryContent");
+      summaryDiv.classList.add("hidden");
+      try {
+        const res = await fetch(`${API_BASE}/summary?bot=${bot}&test_run_id=${testId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Không có thống kê");
+        const { rag, llm, total } = data;
+        let html = `<p><b>Tổng số bản ghi:</b> ${total}</p>`;
+        if (rag && Object.keys(rag).length) {
+          html += `<h3 class="font-semibold mt-2 text-gray-700">RAG Check:</h3><ul class="ml-4">`;
+          for (const [k, v] of Object.entries(rag)) {
+            const color = k.includes("Đúng") ? "text-green-600" : k.includes("Sai") ? "text-red-600" : "text-gray-500";
+            html += `<li class="${color}">${k}: ${v.count} (${v.pct}%)</li>`;
+          }
+          html += `</ul>`;
+        }
+        if (llm && Object.keys(llm).length) {
+          html += `<h3 class="font-semibold mt-2 text-gray-700">LLM Check (OpenAI):</h3><ul class="ml-4">`;
+          for (const [k, v] of Object.entries(llm)) {
+            html += `<li>${k}: ${v.count} (${v.pct}%)</li>`;
+          }
+          html += `</ul>`;
+        }
+        contentDiv.innerHTML = html;
+        summaryDiv.classList.remove("hidden");
+      } catch (err) {
+        console.error("Không thể lấy summary:", err);
+      }
+    }
+
+    // Run test
     document.getElementById("runBtn").addEventListener("click", async () => {
       const bot = document.getElementById("bot").value;
       const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
@@ -174,6 +211,9 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Không rõ nguyên nhân");
         resultDiv.textContent = `✅ Hoàn tất!\n${data.message || ""}\n\n${data.stdout?.slice(-700) || ""}`;
+        if (data.test_run_id) {
+          await showSummary(bot, data.test_run_id);
+        }
       } catch (err) {
         resultDiv.textContent = `❌ Lỗi: ${err}`;
       }
