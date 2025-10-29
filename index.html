@@ -2,81 +2,55 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>BIDV AI Test Runner</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <title>🧠 LINHM3 ToolTest Dashboard</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
+    input, select, button { margin: 10px; padding: 8px; }
+  </style>
 </head>
-<body class="bg-gray-100 min-h-screen flex flex-col items-center py-10">
-  <div class="bg-white shadow-lg rounded-2xl p-8 w-full max-w-3xl">
-    <h1 class="text-2xl font-bold mb-6 text-center text-blue-600">🚀 BIDV AI Test Runner</h1>
+<body>
+  <h1>🧠 LINHM3 TOOLTEST</h1>
+  <h3>Chạy kiểm thử AI nội bộ</h3>
 
-    <!-- Upload Excel -->
-    <label class="block mb-2 font-semibold">1️⃣ Chọn file Excel đầu vào:</label>
-    <input type="file" id="excelFile" accept=".xlsx" class="block w-full border border-gray-300 p-2 rounded mb-4" />
+  <form id="form">
+    <label>Chọn bot:</label>
+    <select id="botSelect" required>
+      <option value="">-- Chọn bot --</option>
+      <option value="hdqt">HĐQT</option>
+      <option value="tin_dung">Tín dụng</option>
+    </select>
+    <br>
+    <label>Upload file Excel:</label>
+    <input type="file" id="fileInput" accept=".xlsx" required>
+    <br>
+    <button type="button" id="runBtn">🚀 Bắt đầu chạy</button>
+  </form>
 
-    <!-- Select functions -->
-    <label class="block mb-2 font-semibold">2️⃣ Chọn chức năng muốn chạy:</label>
-    <div class="grid grid-cols-2 gap-2 mb-4">
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="init_test" checked> init_test
-      </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="get_chatbot_output" checked> get_chatbot_output
-      </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="ref_check" checked> ref_check
-      </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="get_llm_check_output" checked> get_llm_check_output
-      </label>
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="get_llm_check_bone_output" checked> get_llm_check_bone_output
-      </label>
-    </div>
-
-    <!-- Start button -->
-    <button id="runBtn" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Bắt đầu chạy</button>
-
-    <!-- Logs -->
-    <div id="logBox" class="mt-6 bg-gray-50 p-4 rounded-md h-64 overflow-y-auto text-sm font-mono border border-gray-200"></div>
-  </div>
+  <p id="status"></p>
 
   <script>
-    const logBox = document.getElementById("logBox");
-
-    function log(message) {
-      logBox.innerHTML += `<div>${new Date().toLocaleTimeString()} ▶️ ${message}</div>`;
-      logBox.scrollTop = logBox.scrollHeight;
+  document.getElementById("runBtn").addEventListener("click", async () => {
+    const bot = document.getElementById("botSelect").value;
+    const fileInput = document.getElementById("fileInput");
+    const status = document.getElementById("status");
+    if (!bot || !fileInput.files.length) {
+      alert("Vui lòng chọn bot và upload file!");
+      return;
     }
 
-    document.getElementById("runBtn").addEventListener("click", async () => {
-      const fileInput = document.getElementById("excelFile");
-      const file = fileInput.files[0];
-      if (!file) {
-        alert("Hãy chọn file Excel trước!");
-        return;
-      }
+    const formData = new FormData();
+    formData.append("bot", bot);
+    formData.append("file", fileInput.files[0]);
 
-      const selectedFuncs = Array.from(document.querySelectorAll("input[type='checkbox']:checked"))
-        .map(cb => cb.value);
-      log(`Bắt đầu upload file và chạy các chức năng: ${selectedFuncs.join(", ")}`);
-
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("functions", selectedFuncs.join(","));
-
-      try {
-        const res = await fetch("http://localhost:8000/run", {
-          method: "POST",
-          body: formData
-        });
-
-        const data = await res.json();
-        log(`✅ Kết quả: ${JSON.stringify(data, null, 2)}`);
-      } catch (e) {
-        log(`❌ Lỗi khi gọi API: ${e}`);
-      }
+    status.innerText = "⏳ Đang chạy...";
+    const res = await fetch("http://localhost:5000/run", {
+      method: "POST",
+      body: formData
     });
+
+    const data = await res.json();
+    status.innerText = data.message || data.error || "Xong!";
+  });
   </script>
 </body>
 </html>
