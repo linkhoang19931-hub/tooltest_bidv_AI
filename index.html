@@ -6,6 +6,7 @@
   <title>ToolTest AI BIDV</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-8">
   <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
     <h1 class="text-2xl font-bold mb-4 text-center text-indigo-700">ToolTest AI BIDV</h1>
@@ -41,6 +42,11 @@
     <!-- Nút chạy -->
     <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">🚀 Bắt đầu chạy</button>
 
+    <!-- Nút xuất CSV -->
+    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">
+      📥 Xuất CSV từ MongoDB
+    </button>
+
     <!-- Kết quả -->
     <div id="result" class="mt-6 text-sm text-gray-800 whitespace-pre-line"></div>
 
@@ -61,6 +67,8 @@
   </div>
 
   <script>
+    const API_BASE = "http://127.0.0.1:5000";
+
     document.getElementById("runBtn").addEventListener("click", async () => {
       const fileInput = document.getElementById("excelFile");
       const bot = document.getElementById("bot").value;
@@ -93,52 +101,101 @@
       summaryDiv.classList.add("hidden");
 
       try {
-        const res = await fetch("http://127.0.0.1:5000/run", {
-          method: "POST",
-          body: formData
-        });
-
+        const res = await fetch(`${API_BASE}/run`, { method: "POST", body: formData });
         const data = await res.json();
+
         if (!res.ok) {
           resultDiv.innerHTML = `❌ Lỗi: ${data.error || "Không rõ nguyên nhân"}`;
           return;
         }
 
-        // Hiển thị log text
-        resultDiv.innerHTML = `✅ ${data.message || "Hoàn tất!"}\n\n${data.stdout ? data.stdout.slice(-500) : ""}`;
+        resultDiv.innerHTML = `✅ ${data.message || "Hoàn tất!"}\n\n${data.stdout ? data.stdout.slice(-600) : ""}`;
 
-        // Nếu backend trả về thống kê sẵn trong stdout -> parse
-        const ragRegex = /RAG CHECK:[\s\S]*?(?=\n🤖|$)/;
-        const llmRegex = /LLM CHECK \(Bone\):[\s\S]*?(?=\n✅|$)/;
-        const ragMatch = data.stdout.match(ragRegex);
-        const llmMatch = data.stdout.match(llmRegex);
+        // =====================================
+        // 🔍 Tính thống kê RAG & LLM Bone
+        // =====================================
+        const llmCounts = {
+          "Đúng hoàn toàn": 0,
+          "Fail (sai nội dung)": 0,
+          "Fail (gần đúng với đáp án nhưng có thêm thông tin bị sai)": 0,
+          "Fail (gần đúng với đáp án nhưng thiếu ý)": 0,
+          "Fail (không trả lời được)": 0,
+          "Tổng": 0
+        };
 
-        if (ragMatch || llmMatch) {
-          summaryDiv.classList.remove("hidden");
+        const ragCounts = { "Đúng": 0, "Sai": 0, "Không trả lời được": 0, "Tổng": 0 };
 
-          if (ragMatch) {
-            const lines = ragMatch[0].split("\n").filter(l => l.includes(":"));
-            lines.forEach(l => {
-              const clean = l.replace(/^[^a-zA-Z0-9À-ỹ]+/, "").trim();
-              const li = document.createElement("li");
-              li.textContent = clean;
-              ragList.appendChild(li);
+        // Parse stdout nếu backend log theo pattern chuẩn
+        const lines = (data.stdout || "").split("\n");
+        lines.forEach(line => {
+          if (line.includes("llm_check_bone") || line.includes("LLM_CHECK_BONE")) {
+            Object.keys(llmCounts).forEach(k => {
+              if (line.includes(k)) llmCounts[k]++;
             });
+            llmCounts["Tổng"]++;
           }
+          if (line.includes("llm_check") || line.includes("RAG_CHECK")) {
+            if (line.includes("Đúng")) ragCounts["Đúng"]++;
+            else if (line.includes("Sai")) ragCounts["Sai"]++;
+            else ragCounts["Không trả lời được"]++;
+            ragCounts["Tổng"]++;
+          }
+        });
 
-          if (llmMatch) {
-            const lines = llmMatch[0].split("\n").filter(l => l.includes(":"));
-            lines.forEach(l => {
-              const clean = l.replace(/^[^a-zA-Z0-9À-ỹ]+/, "").trim();
-              const li = document.createElement("li");
-              li.textContent = clean;
-              llmList.appendChild(li);
-            });
+        // Hiển thị thống kê
+        summaryDiv.classList.remove("hidden");
+        ragList.innerHTML = "";
+        Object.entries(ragCounts).forEach(([k, v]) => {
+          if (k !== "Tổng") {
+            const li = document.createElement("li");
+            li.textContent = `${k}: ${v} (${ragCounts["Tổng"] ? ((v / ragCounts["Tổng"]) * 100).toFixed(1) : 0}%)`;
+            ragList.appendChild(li);
           }
-        }
+        });
+
+        llmList.innerHTML = "";
+        Object.entries(llmCounts).forEach(([k, v]) => {
+          if (k !== "Tổng") {
+            const li = document.createElement("li");
+            li.textContent = `${k}: ${v} (${llmCounts["Tổng"] ? ((v / llmCounts["Tổng"]) * 100).toFixed(1) : 0}%)`;
+            llmList.appendChild(li);
+          }
+        });
 
       } catch (err) {
         resultDiv.innerHTML = `❌ Kết nối thất bại: ${err}`;
+      }
+    });
+
+    // =====================================
+    // 📥 Nút tải CSV từ MongoDB
+    // =====================================
+    document.getElementById("exportCsvBtn").addEventListener("click", async () => {
+      const bot = document.getElementById("bot").value;
+      if (!bot) {
+        alert("⚠️ Vui lòng chọn bot trước khi xuất CSV!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/export_csv?bot=${bot}`);
+        if (!res.ok) {
+          const err = await res.json();
+          alert(`❌ Lỗi: ${err.error || "Không thể xuất CSV"}`);
+          return;
+        }
+
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `output_${bot}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      } catch (err) {
+        alert(`❌ Lỗi khi tải CSV: ${err}`);
       }
     });
   </script>
