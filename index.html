@@ -29,16 +29,30 @@
     <!-- Chọn chức năng -->
     <div class="mb-4">
       <label class="block text-gray-700 font-semibold mb-1">⚙️ Chọn chức năng cần chạy:</label>
-      <div class="space-y-2">
-        <label class="flex items-center"><input type="checkbox" value="init_test" class="func mr-2">Init Test</label>
-        <label class="flex items-center"><input type="checkbox" value="get_chatbot_output" class="func mr-2">Get Chatbot Output</label>
-        <label class="flex items-center"><input type="checkbox" value="ref_check" class="func mr-2">Ref Check</label>
-        <label class="flex items-center"><input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">LLM Check (Bone)</label>
+      <div class="space-y-2 text-gray-800">
+        <label class="flex items-center">
+          <input type="checkbox" value="init_test" class="func mr-2">
+          🧩 <span class="ml-1 font-medium">Init Test – Tạo test mới</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="get_chatbot_output" class="func mr-2">
+          💬 <span class="ml-1 font-medium">Get Chatbot Output – Lấy kết quả response</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="ref_check" class="func mr-2">
+          🧠 <span class="ml-1 font-medium">Ref Check – Kiểm tra độ chính xác của RAG</span>
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">
+          🔍 <span class="ml-1 font-medium">LLM Check (Bone) – Kiểm tra LLM OpenAI</span>
+        </label>
       </div>
     </div>
 
     <!-- Nút chạy -->
-    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">🚀 Bắt đầu chạy</button>
+    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">
+      🚀 Bắt đầu chạy
+    </button>
 
     <!-- Kết quả -->
     <div id="result" class="mt-6 text-sm text-gray-800"></div>
@@ -70,8 +84,9 @@
         });
 
         const data = await res.json();
-        resultDiv.innerHTML = res.ok ? `✅ Thành công: ${data.message || "Hoàn tất!"}` :
-                                       `❌ Lỗi: ${data.error || "Không rõ nguyên nhân"}`;
+        resultDiv.innerHTML = res.ok
+          ? `✅ Thành công: ${data.message || "Hoàn tất!"}`
+          : `❌ Lỗi: ${data.error || "Không rõ nguyên nhân"}`;
       } catch (err) {
         resultDiv.innerHTML = `❌ Kết nối thất bại: ${err}`;
       }
