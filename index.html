@@ -6,7 +6,6 @@
   <title>ToolTest AI BIDV</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-
 <body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-8">
   <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
     <h1 class="text-2xl font-bold mb-4 text-center text-indigo-700">ToolTest AI BIDV</h1>
@@ -18,7 +17,7 @@
       <p class="text-sm text-gray-500 mt-1">File Excel cần có các cột: <b>id</b>, <b>query</b>, <b>label</b>, <b>citation_no</b>, <b>citation_title</b></p>
     </div>
 
-    <!-- Chọn bot -->
+    <!-- Bot -->
     <div class="mb-4">
       <label class="block text-gray-700 font-semibold mb-1">🤖 Chọn bot:</label>
       <select id="bot" class="w-full border rounded px-3 py-2">
@@ -28,175 +27,99 @@
       </select>
     </div>
 
-    <!-- Chọn chức năng -->
+    <!-- Test cũ -->
     <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-1">⚙️ Chọn chức năng cần chạy:</label>
+      <label class="block text-gray-700 font-semibold mb-1">🗂 Chọn test đã chạy:</label>
+      <select id="testList" class="w-full border rounded px-3 py-2">
+        <option value="">-- Chưa chọn --</option>
+      </select>
+      <button id="refreshTestsBtn" class="text-sm text-indigo-600 mt-1 underline">🔄 Tải danh sách test</button>
+    </div>
+
+    <!-- Functions -->
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-1">⚙️ Chức năng cần chạy:</label>
       <div class="space-y-2">
-        <label class="flex items-center"><input type="checkbox" value="init_test" class="func mr-2">🧩 Init Test – Tạo test mới</label>
-        <label class="flex items-center"><input type="checkbox" value="get_chatbot_output" class="func mr-2">💬 Get Chatbot Output – Lấy kết quả response</label>
-        <label class="flex items-center"><input type="checkbox" value="ref_check" class="func mr-2">🧠 Ref Check – Kiểm tra độ chính xác của RAG</label>
-        <label class="flex items-center"><input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">🔍 LLM Check (Bone) – Kiểm tra LLM OpenAI</label>
+        <label class="flex items-center"><input type="checkbox" value="init_test" class="func mr-2">🧩 Init Test</label>
+        <label class="flex items-center"><input type="checkbox" value="get_chatbot_output" class="func mr-2">💬 Get Chatbot Output</label>
+        <label class="flex items-center"><input type="checkbox" value="ref_check" class="func mr-2">🧠 Ref Check</label>
+        <label class="flex items-center"><input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">🔍 LLM Check (Bone)</label>
       </div>
     </div>
 
-    <!-- Nút chạy -->
+    <!-- Run -->
     <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">🚀 Bắt đầu chạy</button>
+    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">📥 Xuất CSV</button>
 
-    <!-- Nút xuất CSV -->
-    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">
-      📥 Xuất CSV từ MongoDB
-    </button>
-
-    <!-- Kết quả -->
+    <!-- Result -->
     <div id="result" class="mt-6 text-sm text-gray-800 whitespace-pre-line"></div>
-
-    <!-- Thống kê -->
-    <div id="summary" class="mt-6 hidden">
-      <h2 class="text-lg font-semibold text-indigo-700 mb-2">📊 Kết quả thống kê</h2>
-
-      <div id="ragStats" class="mb-4">
-        <h3 class="font-semibold text-gray-700 mb-1">🔍 RAG Check</h3>
-        <ul id="ragList" class="list-disc pl-5 text-gray-700"></ul>
-      </div>
-
-      <div id="llmStats">
-        <h3 class="font-semibold text-gray-700 mb-1">🤖 LLM Check (Bone)</h3>
-        <ul id="llmList" class="list-disc pl-5 text-gray-700"></ul>
-      </div>
-    </div>
   </div>
 
   <script>
     const API_BASE = "http://127.0.0.1:5000";
 
-    document.getElementById("runBtn").addEventListener("click", async () => {
-      const fileInput = document.getElementById("excelFile");
+    async function loadTests() {
       const bot = document.getElementById("bot").value;
-      const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
-      const resultDiv = document.getElementById("result");
-      const summaryDiv = document.getElementById("summary");
-      const ragList = document.getElementById("ragList");
-      const llmList = document.getElementById("llmList");
-
-      summaryDiv.classList.add("hidden");
-      ragList.innerHTML = "";
-      llmList.innerHTML = "";
-
-      if (!fileInput.files.length && funcs.includes("init_test")) {
-        resultDiv.innerHTML = "⚠️ Vui lòng chọn file Excel!";
-        return;
-      }
-
-      if (!bot || funcs.length === 0) {
-        resultDiv.innerHTML = "⚠️ Vui lòng chọn bot và ít nhất một chức năng!";
-        return;
-      }
-
-      const formData = new FormData();
-      if (fileInput.files.length) formData.append("file", fileInput.files[0]);
-      formData.append("bot", bot);
-      formData.append("functions", funcs.join(","));
-
-      resultDiv.innerHTML = "⏳ Đang chạy...";
-      summaryDiv.classList.add("hidden");
+      const testList = document.getElementById("testList");
+      testList.innerHTML = "<option value=''>-- Chưa chọn --</option>";
+      if (!bot) return;
 
       try {
-        const res = await fetch(`${API_BASE}/run`, { method: "POST", body: formData });
+        const res = await fetch(`${API_BASE}/list_tests?bot=${bot}`);
         const data = await res.json();
-
-        if (!res.ok) {
-          resultDiv.innerHTML = `❌ Lỗi: ${data.error || "Không rõ nguyên nhân"}`;
-          return;
-        }
-
-        resultDiv.innerHTML = `✅ ${data.message || "Hoàn tất!"}\n\n${data.stdout ? data.stdout.slice(-600) : ""}`;
-
-        // =====================================
-        // 🔍 Tính thống kê RAG & LLM Bone
-        // =====================================
-        const llmCounts = {
-          "Đúng hoàn toàn": 0,
-          "Fail (sai nội dung)": 0,
-          "Fail (gần đúng với đáp án nhưng có thêm thông tin bị sai)": 0,
-          "Fail (gần đúng với đáp án nhưng thiếu ý)": 0,
-          "Fail (không trả lời được)": 0,
-          "Tổng": 0
-        };
-
-        const ragCounts = { "Đúng": 0, "Sai": 0, "Không trả lời được": 0, "Tổng": 0 };
-
-        // Parse stdout nếu backend log theo pattern chuẩn
-        const lines = (data.stdout || "").split("\n");
-        lines.forEach(line => {
-          if (line.includes("llm_check_bone") || line.includes("LLM_CHECK_BONE")) {
-            Object.keys(llmCounts).forEach(k => {
-              if (line.includes(k)) llmCounts[k]++;
-            });
-            llmCounts["Tổng"]++;
-          }
-          if (line.includes("llm_check") || line.includes("RAG_CHECK")) {
-            if (line.includes("Đúng")) ragCounts["Đúng"]++;
-            else if (line.includes("Sai")) ragCounts["Sai"]++;
-            else ragCounts["Không trả lời được"]++;
-            ragCounts["Tổng"]++;
-          }
+        if (!data.status) throw new Error(data.error);
+        data.data.forEach(t => {
+          const time = new Date(t.start_time * 1000).toLocaleString("vi-VN");
+          const opt = document.createElement("option");
+          opt.value = t.test_run_id;
+          opt.textContent = `${time} | ${t.file_name} | ID=${t.test_run_id}`;
+          testList.appendChild(opt);
         });
-
-        // Hiển thị thống kê
-        summaryDiv.classList.remove("hidden");
-        ragList.innerHTML = "";
-        Object.entries(ragCounts).forEach(([k, v]) => {
-          if (k !== "Tổng") {
-            const li = document.createElement("li");
-            li.textContent = `${k}: ${v} (${ragCounts["Tổng"] ? ((v / ragCounts["Tổng"]) * 100).toFixed(1) : 0}%)`;
-            ragList.appendChild(li);
-          }
-        });
-
-        llmList.innerHTML = "";
-        Object.entries(llmCounts).forEach(([k, v]) => {
-          if (k !== "Tổng") {
-            const li = document.createElement("li");
-            li.textContent = `${k}: ${v} (${llmCounts["Tổng"] ? ((v / llmCounts["Tổng"]) * 100).toFixed(1) : 0}%)`;
-            llmList.appendChild(li);
-          }
-        });
-
       } catch (err) {
-        resultDiv.innerHTML = `❌ Kết nối thất bại: ${err}`;
+        alert("❌ Không tải được danh sách test: " + err);
       }
+    }
+
+    document.getElementById("refreshTestsBtn").addEventListener("click", loadTests);
+    document.getElementById("bot").addEventListener("change", loadTests);
+
+    // Run
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      const bot = document.getElementById("bot").value;
+      const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
+      const testId = document.getElementById("testList").value;
+      const file = document.getElementById("excelFile").files[0];
+      const resultDiv = document.getElementById("result");
+      if (!bot || funcs.length === 0) {
+        alert("⚠️ Chọn bot và ít nhất một chức năng!");
+        return;
+      }
+      const formData = new FormData();
+      formData.append("bot", bot);
+      formData.append("functions", funcs.join(","));
+      if (file) formData.append("file", file);
+      if (testId) formData.append("test_id", testId);
+
+      resultDiv.textContent = "⏳ Đang chạy...";
+      const res = await fetch(`${API_BASE}/run`, { method: "POST", body: formData });
+      const data = await res.json();
+      resultDiv.textContent = res.ok ? data.stdout : data.error;
     });
 
-    // =====================================
-    // 📥 Nút tải CSV từ MongoDB
-    // =====================================
+    // Export CSV
     document.getElementById("exportCsvBtn").addEventListener("click", async () => {
       const bot = document.getElementById("bot").value;
       if (!bot) {
-        alert("⚠️ Vui lòng chọn bot trước khi xuất CSV!");
+        alert("⚠️ Vui lòng chọn bot trước!");
         return;
       }
-
-      try {
-        const res = await fetch(`${API_BASE}/export_csv?bot=${bot}`);
-        if (!res.ok) {
-          const err = await res.json();
-          alert(`❌ Lỗi: ${err.error || "Không thể xuất CSV"}`);
-          return;
-        }
-
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `output_${bot}.csv`;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        window.URL.revokeObjectURL(url);
-      } catch (err) {
-        alert(`❌ Lỗi khi tải CSV: ${err}`);
-      }
+      const res = await fetch(`${API_BASE}/export_csv?bot=${bot}`);
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `output_${bot}.csv`;
+      a.click();
     });
   </script>
 </body>
