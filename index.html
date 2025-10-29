@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Tool Test AI BIDV</title>
+  <title>Tool Test AI BIDV + Tải PDF HĐQT</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/942/942748.png">
   <style>
     body {
@@ -22,52 +22,28 @@
       font-weight: 600;
     }
 
-    .menu {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      background: #eaf0f7;
-      padding: 10px;
-      border-bottom: 1px solid #ccc;
-    }
-
-    .menu button {
-      background: #0b5394;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 6px;
-      border: none;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .menu button.active {
-      background: #073763;
-    }
-
     .container {
-      padding: 30px;
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 30px;
     }
 
     .panel {
-      width: 80%;
+      flex: 1;
       background: #fff;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
       padding: 20px;
-      display: none;
+      min-height: 400px;
     }
 
-    .panel.active {
-      display: block;
-      animation: fadeIn 0.3s ease-in;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    h2 {
+      color: #0b5394;
+      border-bottom: 2px solid #0b5394;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
     }
 
     label {
@@ -84,14 +60,14 @@
       margin: 4px 0;
     }
 
-    button.action {
+    button {
       background: #0b5394;
       color: white;
       cursor: pointer;
       font-weight: 500;
     }
 
-    button.action:hover {
+    button:hover {
       background: #073763;
     }
 
@@ -107,25 +83,18 @@
       font-size: 13px;
     }
 
-    .progress-container {
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
       margin-top: 10px;
-      background: #e9ecef;
-      border-radius: 6px;
-      height: 20px;
-      width: 100%;
-      overflow: hidden;
     }
 
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background-color: #0b5394;
-      color: white;
-      text-align: center;
-      font-size: 12px;
-      line-height: 20px;
+    .checkbox-group label {
+      background: #eef3f8;
       border-radius: 6px;
-      transition: width 0.3s;
+      padding: 5px 10px;
+      cursor: pointer;
     }
 
     footer {
@@ -135,23 +104,23 @@
       color: white;
       font-size: 13px;
     }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+    }
   </style>
 </head>
 
 <body>
-  <header>🧠 TOOL TEST AI BIDV</header>
-
-  <!-- MENU -->
-  <div class="menu">
-    <button id="btn-tool" class="active" onclick="switchPanel('tool')">🧩 Tool Test AI</button>
-    <button id="btn-pdf" onclick="switchPanel('pdf')">📂 Tải PDF HĐQT</button>
-  </div>
+  <header>🧠 TOOL TEST AI BIDV + 📂 TẢI PDF HĐQT</header>
 
   <div class="container">
     <!-- ================================================= -->
-    <!-- 🧩 PANEL 1: TOOL TEST AI -->
+    <!-- 🔹 CỘT TRÁI: TOOL TEST AI BIDV -->
     <!-- ================================================= -->
-    <div id="panel-tool" class="panel active">
+    <div id="tool-panel" class="panel">
       <h2>🤖 Tool Test AI BIDV</h2>
 
       <label>📂 Chọn file Excel:</label><br>
@@ -173,27 +142,30 @@
       <button onclick="loadTests()">🔄 Tải danh sách test</button>
 
       <br><br>
-      <label>⚙️ Chức năng cần chạy:</label><br>
-      <label><input type="checkbox" value="init_test"> 🧩 Init Test</label><br>
-      <label><input type="checkbox" value="get_chatbot_output"> 💬 Get Chatbot Output</label><br>
-      <label><input type="checkbox" value="ref_check"> 🧠 Ref Check</label><br>
-      <label><input type="checkbox" value="get_llm_check_output"> 🔍 LLM Check (OpenAI)</label><br>
-      <label><input type="checkbox" value="get_llm_check_bone_output"> 🦴 LLM Check (Bone)</label><br><br>
+      <label>⚙️ Chức năng cần chạy:</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="init_test"> 🧩 Init Test</label>
+        <label><input type="checkbox" value="get_chatbot_output"> 💬 Get Chatbot Output</label>
+        <label><input type="checkbox" value="ref_check"> 🧠 Ref Check</label>
+        <label><input type="checkbox" value="get_llm_check_output"> 🔍 LLM Check (OpenAI)</label>
+        <label><input type="checkbox" value="get_llm_check_bone_output"> 🦴 LLM Check (Bone)</label>
+      </div>
 
-      <button class="action" onclick="runTool()">🚀 Bắt đầu chạy</button>
-      <button class="action" onclick="exportCSV()">📥 Xuất CSV</button>
-      <button class="action" onclick="loadSummary()">📊 Xem tổng kết</button>
+      <br>
+      <button onclick="runTool()">🚀 Bắt đầu chạy</button>
+      <button onclick="exportCSV()">📥 Xuất CSV</button>
+      <button onclick="loadSummary()">📊 Xem tổng kết</button>
 
       <div id="log" class="log-box"></div>
     </div>
 
     <!-- ================================================= -->
-    <!-- 📂 PANEL 2: TẢI PDF HĐQT -->
+    <!-- 🔹 CỘT PHẢI: TẢI PDF HĐQT -->
     <!-- ================================================= -->
-    <div id="panel-pdf" class="panel">
+    <div id="pdf-section" class="panel">
       <h2>📂 Tải PDF HĐQT</h2>
 
-      <label>Chọn folder cần tải:</label><br>
+      <label for="folder">Chọn folder:</label><br>
       <select id="folder">
         <option value="">-- chọn folder --</option>
         <option value="quanlyruiro">04_Quản lý rủi ro</option>
@@ -201,39 +173,21 @@
         <option value="hoatdonghdqt">01_Hoạt động HĐQT</option>
         <option value="chienluocvathitruong">02_Chiến lược & Thị trường</option>
         <option value="tinhtonghop">03_Tổng hợp & Giám sát</option>
-      </select><br>
+      </select>
 
-      <button class="action" onclick="downloadPDFs()">📥 Bắt đầu tải PDF</button>
-
-      <div class="progress-container">
-        <div class="progress-bar" id="progress-bar">0%</div>
-      </div>
+      <br>
+      <button id="btn-download" onclick="downloadPDFs()">📥 Tải PDF</button>
 
       <div id="pdf-log" class="log-box"></div>
     </div>
   </div>
 
   <footer>
-    © BIDV Internal Tool | Designed by LinhHM3 | v2.0
+    © BIDV Internal Tool | Designed by LinhHM3 | v1.0
   </footer>
 
   <script>
     const API_BASE = "http://127.0.0.1:5000";
-
-    function switchPanel(mode) {
-      document.getElementById("panel-tool").classList.remove("active");
-      document.getElementById("panel-pdf").classList.remove("active");
-      document.getElementById("btn-tool").classList.remove("active");
-      document.getElementById("btn-pdf").classList.remove("active");
-
-      if (mode === "tool") {
-        document.getElementById("panel-tool").classList.add("active");
-        document.getElementById("btn-tool").classList.add("active");
-      } else {
-        document.getElementById("panel-pdf").classList.add("active");
-        document.getElementById("btn-pdf").classList.add("active");
-      }
-    }
 
     async function loadTests() {
       const bot = document.getElementById("bot").value;
@@ -255,7 +209,7 @@
       const bot = document.getElementById("bot").value;
       const file = document.getElementById("excelFile").files[0];
       const test_id = document.getElementById("testList").value;
-      const functions = [...document.querySelectorAll('input[type="checkbox"]:checked')].map(i => i.value).join(",");
+      const functions = [...document.querySelectorAll(".checkbox-group input:checked")].map(i => i.value).join(",");
       const log = document.getElementById("log");
       log.textContent = "⏳ Đang chạy...";
 
@@ -291,10 +245,7 @@
     async function downloadPDFs() {
       const folder = document.getElementById("folder").value;
       const log = document.getElementById("pdf-log");
-      const bar = document.getElementById("progress-bar");
-      log.textContent = "⏳ Đang chuẩn bị tải...";
-      bar.style.width = "0%";
-      bar.textContent = "0%";
+      log.textContent = "⏳ Đang xử lý...";
 
       if (!folder) {
         log.textContent = "⚠️ Vui lòng chọn folder cần tải.";
@@ -302,29 +253,13 @@
       }
 
       try {
-        // gọi API kiểm tra danh sách trước để tính số file
-        const respList = await fetch(`${API_BASE}/count_pdfs?folder=${folder}`);
-        const meta = await respList.json();
-        const total = meta.total || 10;
-        let done = 0;
-
-        // simulate progress (backend gửi tuần tự file nén)
-        const interval = setInterval(() => {
-          if (done < total) {
-            done++;
-            const pct = Math.min(100, Math.round((done / total) * 100));
-            bar.style.width = pct + "%";
-            bar.textContent = pct + "%";
-          }
-        }, 500);
-
         const form = new FormData();
         form.append("folder", folder);
-        const response = await fetch(`${API_BASE}/download_pdfs`, { method: "POST", body: form });
 
-        clearInterval(interval);
-        bar.style.width = "100%";
-        bar.textContent = "100%";
+        const response = await fetch(`${API_BASE}/download_pdfs`, {
+          method: "POST",
+          body: form
+        });
 
         if (!response.ok) {
           const data = await response.json();
