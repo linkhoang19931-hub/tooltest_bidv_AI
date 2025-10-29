@@ -20,6 +20,7 @@
       text-align: center;
       font-size: 22px;
       font-weight: 600;
+      letter-spacing: 0.5px;
     }
 
     .container {
@@ -297,7 +298,7 @@
           return;
         }
 
-        // Tính % theo dung lượng tải
+        // Hiển thị % tải theo dung lượng thực
         const reader = response.body.getReader();
         const contentLength = +response.headers.get("Content-Length");
         let receivedLength = 0;
@@ -317,12 +318,10 @@
         }
 
         const blob = new Blob(chunks);
-        const savePath = document.getElementById("savePath");
-        let folderName = folder + ".zip";
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = folderName;
+        a.download = folder + ".zip";
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -330,7 +329,7 @@
 
         progressBar.style.width = "100%";
         progressBar.textContent = "100%";
-        log.textContent = "✅ Đã tải xong " + folderName;
+        log.textContent = "✅ Đã tải xong " + folder + ".zip";
       } catch (err) {
         log.textContent = "❌ Lỗi: " + err.message;
       }
@@ -338,4 +337,3 @@
   </script>
 </body>
 </html>
-
