@@ -1,250 +1,192 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ToolTest AI BIDV</title>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <title>Tool Test AI BIDV + Tải PDF HĐQT</title>
+  <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/942/942748.png">
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f8fafc;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background: linear-gradient(90deg, #0b5394, #073763);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 30px;
+    }
+
+    .panel {
+      flex: 1;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 20px;
+      min-height: 400px;
+    }
+
+    h2 {
+      color: #0b5394;
+      border-bottom: 2px solid #0b5394;
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+    }
+
+    /* ====== Tool test AI (giữ nguyên style) ====== */
+    #tool-panel {
+      flex: 2;
+    }
+
+    /* ====== PDF panel ====== */
+    #pdf-section select, #pdf-section button {
+      padding: 8px 12px;
+      font-size: 14px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-right: 8px;
+      margin-bottom: 10px;
+    }
+
+    #pdf-section button {
+      background: #0b5394;
+      color: white;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    #pdf-section button:hover {
+      background: #073763;
+    }
+
+    .log-box {
+      margin-top: 15px;
+      padding: 10px;
+      height: 150px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #f8f9fa;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-size: 13px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 10px;
+      background: #0b5394;
+      color: white;
+      font-size: 13px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
 </head>
 
-<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-8">
-  <div class="bg-white rounded-xl shadow-lg w-full max-w-2xl p-6">
-    <h1 class="text-2xl font-bold mb-4 text-center text-indigo-700">ToolTest AI BIDV</h1>
+<body>
+  <header>🧠 TOOL TEST AI BIDV + 📂 TẢI PDF HĐQT</header>
 
-    <!-- Upload Excel -->
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-1">📂 Chọn file Excel:</label>
-      <input id="excelFile" type="file" accept=".xlsx" class="w-full border rounded px-3 py-2">
-      <p class="text-sm text-gray-500 mt-1">
-        File Excel cần có các cột: <b>id</b>, <b>query</b>, <b>label</b>, <b>citation_no</b>, <b>citation_title</b>
-      </p>
+  <div class="container">
+    <!-- ================================================= -->
+    <!-- 🔹 CỘT 1: TOOL TEST AI BIDV -->
+    <!-- ================================================= -->
+    <div id="tool-panel" class="panel">
+      <h2>🤖 Tool Test AI BIDV</h2>
+
+      <p><i>(Giữ nguyên khu vực hiện tại của bạn, bảng test-case, input file Excel, các nút “Run”, “Summary”, “Export CSV”...)</i></p>
+
+      <!-- 
+        🔸 Bạn có thể copy toàn bộ HTML/Javascript của bảng cũ vào đây
+        ví dụ: <input type="file">, <select bot>, <button run>, v.v.
+      -->
     </div>
 
-    <!-- Bot -->
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-1">🤖 Chọn bot:</label>
-      <select id="bot" class="w-full border rounded px-3 py-2">
-        <option value="">-- Chọn bot --</option>
-        <option value="hdqt">Hội đồng quản trị (HDQT)</option>
-        <option value="tin_dung">Tín dụng</option>
+    <!-- ================================================= -->
+    <!-- 🔹 CỘT 2: TẢI PDF HĐQT -->
+    <!-- ================================================= -->
+    <div id="pdf-section" class="panel">
+      <h2>📂 Tải PDF HĐQT</h2>
+
+      <label for="folder">Chọn folder:</label><br>
+      <select id="folder">
+        <option value="">-- chọn folder --</option>
+        <option value="quanlyruiro">04_Quản lý rủi ro</option>
+        <option value="tuanthuvaphapche">05_Tuân thủ & Pháp chế</option>
+        <option value="hoatdonghdqt">01_Hoạt động HĐQT</option>
+        <option value="chienluocvathitruong">02_Chiến lược & Thị trường</option>
+        <option value="tinhtonghop">03_Tổng hợp & Giám sát</option>
       </select>
-    </div>
 
-    <!-- Group -->
-    <div id="groupContainer" class="mb-4 hidden">
-      <label class="block text-gray-700 font-semibold mb-1">📚 Chọn nhóm tài liệu (Group):</label>
-      <select id="groupSelect" class="w-full border rounded px-3 py-2">
-        <option value="all">-- Chạy toàn bộ group --</option>
-      </select>
-    </div>
+      <br>
+      <button id="btn-download" onclick="downloadPDFs()">📥 Tải PDF</button>
 
-    <!-- Test cũ -->
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-1">🗂 Chọn test đã chạy:</label>
-      <select id="testList" class="w-full border rounded px-3 py-2">
-        <option value="">-- Chưa chọn --</option>
-      </select>
-      <button id="refreshTestsBtn" class="text-sm text-indigo-600 mt-1 underline">🔄 Tải danh sách test</button>
-    </div>
-
-    <!-- Functions -->
-    <div class="mb-4">
-      <label class="block text-gray-700 font-semibold mb-1">⚙️ Chức năng cần chạy:</label>
-      <div class="space-y-2">
-        <label class="flex items-center">
-          <input type="checkbox" value="init_test" class="func mr-2">
-          🧩 <b>Init Test</b> – Tạo test mới
-        </label>
-        <label class="flex items-center">
-          <input type="checkbox" value="get_chatbot_output" class="func mr-2">
-          💬 <b>Get Chatbot Output</b> – Lấy phản hồi (response) từ bot
-        </label>
-        <label class="flex items-center">
-          <input type="checkbox" value="ref_check" class="func mr-2">
-          🧠 <b>Ref Check</b> – Kiểm tra văn bản tham chiếu (RAG)
-        </label>
-        <label class="flex items-center">
-          <input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">
-          🔍 <b>LLM Check (OpenAI)</b> – Kiểm tra nội dung trả lời bằng LLM
-        </label>
-      </div>
-    </div>
-
-    <!-- Run -->
-    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">
-      🚀 Bắt đầu chạy
-    </button>
-    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">
-      📥 Xuất CSV
-    </button>
-
-    <!-- Result -->
-    <div id="result" class="mt-6 text-sm text-gray-800 whitespace-pre-line border-t pt-3"></div>
-
-    <!-- Summary -->
-    <div id="summaryDiv" class="mt-6 hidden">
-      <h2 class="text-lg font-bold text-indigo-700 mb-2">📊 Kết quả thống kê</h2>
-      <div id="summaryContent" class="text-sm text-gray-800"></div>
+      <div id="log" class="log-box"></div>
     </div>
   </div>
 
+  <footer>
+    © BIDV Internal Tool | Designed by LinhHM3 | v1.0
+  </footer>
+
   <script>
-    const API_BASE = "http://127.0.0.1:5000";
+    async function downloadPDFs() {
+      const folder = document.getElementById("folder").value;
+      const log = document.getElementById("log");
+      log.textContent = "⏳ Đang xử lý...";
 
-    const GROUPS = {
-      hdqt: [
-        "quanlyruiro", "tuanthuvaphapche", "hoatdonghdqt",
-        "giamsathieuqua", "chienluocvathitruong"
-      ],
-      tin_dung: [
-        "vbcd_tiente_khoquy", "vbcd_thanhtoan", "vbcdtaichinh", "vbcd_taisan_xdcb",
-        "vbcd_dichvu", "vbcd_quantri_dieuhanh_mohinhtochuc", "vbcd_tindung",
-        "vbcd_quanlyruiro", "vbcdcorebanking", "vbcd_khac", "vbcdcongnghe",
-        "vbcd_nhansu", "vbcdhuydongvon", "vbcd_kdvtt", "vbcd_chamsockhachhang",
-        "vbcd_xulyno_totung_tranhchap", "vbcd_the", "vbcd_phancong_phancap_uyquyen", "vbcdketoan"
-      ]
-    };
-
-    function loadGroups(bot) {
-      const container = document.getElementById("groupContainer");
-      const select = document.getElementById("groupSelect");
-      select.innerHTML = '<option value="all">-- Chạy toàn bộ group --</option>';
-      if (!bot || !GROUPS[bot]) {
-        container.classList.add("hidden");
+      if (!folder) {
+        log.textContent = "⚠️ Vui lòng chọn folder cần tải.";
         return;
       }
-      GROUPS[bot].forEach(g => {
-        const opt = document.createElement("option");
-        opt.value = g;
-        opt.textContent = g;
-        select.appendChild(opt);
-      });
-      container.classList.remove("hidden");
-    }
-
-    async function loadTests() {
-      const bot = document.getElementById("bot").value;
-      const testList = document.getElementById("testList");
-      testList.innerHTML = "<option value=''>-- Chưa chọn --</option>";
-      if (!bot) return;
 
       try {
-        const res = await fetch(`${API_BASE}/list_tests?bot=${bot}`);
-        const data = await res.json();
-        if (!data.status) throw new Error(data.error || "Không có dữ liệu");
-        data.data.forEach(t => {
-          const time = new Date(t.start_time * 1000).toLocaleString("vi-VN");
-          const opt = document.createElement("option");
-          opt.value = t.test_run_id;
-          opt.textContent = `${time} | ${t.file_name} | ID=${t.test_run_id}`;
-          testList.appendChild(opt);
+        const form = new FormData();
+        form.append("folder", folder);
+
+        // ⚙️ chỉnh lại nếu Flask backend chạy server khác
+        const response = await fetch("http://127.0.0.1:5000/download_pdfs", {
+          method: "POST",
+          body: form
         });
-      } catch (err) {
-        alert("❌ Không tải được danh sách test: " + err);
-      }
-    }
 
-    document.getElementById("refreshTestsBtn").addEventListener("click", loadTests);
-    document.getElementById("bot").addEventListener("change", e => {
-      const bot = e.target.value;
-      loadGroups(bot);
-      loadTests();
-    });
-
-    // Hiển thị thống kê
-    async function showSummary(bot, testId) {
-      const summaryDiv = document.getElementById("summaryDiv");
-      const contentDiv = document.getElementById("summaryContent");
-      summaryDiv.classList.add("hidden");
-      try {
-        const res = await fetch(`${API_BASE}/summary?bot=${bot}&test_run_id=${testId}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Không có thống kê");
-        const { rag, llm, total } = data;
-        let html = `<p><b>Tổng số bản ghi:</b> ${total}</p>`;
-        if (rag && Object.keys(rag).length) {
-          html += `<h3 class="font-semibold mt-2 text-gray-700">RAG Check:</h3><ul class="ml-4">`;
-          for (const [k, v] of Object.entries(rag)) {
-            const color = k.includes("Đúng") ? "text-green-600" : k.includes("Sai") ? "text-red-600" : "text-gray-500";
-            html += `<li class="${color}">${k}: ${v.count} (${v.pct}%)</li>`;
-          }
-          html += `</ul>`;
+        if (!response.ok) {
+          const data = await response.json();
+          log.textContent = "❌ Lỗi: " + (data.error || response.statusText);
+          return;
         }
-        if (llm && Object.keys(llm).length) {
-          html += `<h3 class="font-semibold mt-2 text-gray-700">LLM Check (OpenAI):</h3><ul class="ml-4">`;
-          for (const [k, v] of Object.entries(llm)) {
-            html += `<li>${k}: ${v.count} (${v.pct}%)</li>`;
-          }
-          html += `</ul>`;
-        }
-        contentDiv.innerHTML = html;
-        summaryDiv.classList.remove("hidden");
-      } catch (err) {
-        console.error("Không thể lấy summary:", err);
-      }
-    }
 
-    // Run test
-    document.getElementById("runBtn").addEventListener("click", async () => {
-      const bot = document.getElementById("bot").value;
-      const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
-      const testId = document.getElementById("testList").value;
-      const group = document.getElementById("groupSelect").value;
-      const file = document.getElementById("excelFile").files[0];
-      const resultDiv = document.getElementById("result");
-
-      if (!bot || funcs.length === 0) {
-        alert("⚠️ Vui lòng chọn bot và ít nhất một chức năng!");
-        return;
-      }
-
-      const formData = new FormData();
-      formData.append("bot", bot);
-      formData.append("functions", funcs.join(","));
-      if (group && group !== "all") formData.append("group", group);
-      if (file) formData.append("file", file);
-      if (testId) formData.append("test_id", testId);
-
-      resultDiv.textContent = "⏳ Đang chạy, vui lòng đợi...";
-      try {
-        const res = await fetch(`${API_BASE}/run`, { method: "POST", body: formData });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Không rõ nguyên nhân");
-        resultDiv.textContent = `✅ Hoàn tất!\n${data.message || ""}\n\n${data.stdout?.slice(-700) || ""}`;
-        if (data.test_run_id) {
-          await showSummary(bot, data.test_run_id);
-        }
-      } catch (err) {
-        resultDiv.textContent = `❌ Lỗi: ${err}`;
-      }
-    });
-
-    // Export CSV
-    document.getElementById("exportCsvBtn").addEventListener("click", async () => {
-      const bot = document.getElementById("bot").value;
-      const testId = document.getElementById("testList").value;
-      if (!bot || !testId) {
-        alert("⚠️ Vui lòng chọn bot và test để xuất CSV!");
-        return;
-      }
-
-      try {
-        const url = `${API_BASE}/export_csv?bot=${bot}&test_run_id=${testId}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("Không thể tải CSV");
-        const blob = await res.blob();
-        const blobUrl = window.URL.createObjectURL(blob);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
-        a.href = blobUrl;
-        a.download = `output_${bot}_${testId}.csv`;
+        a.href = url;
+        a.download = folder + ".zip";
         document.body.appendChild(a);
         a.click();
         a.remove();
-        window.URL.revokeObjectURL(blobUrl);
+        window.URL.revokeObjectURL(url);
+
+        log.textContent = "✅ Đã tải xong file " + folder + ".zip";
       } catch (err) {
-        alert("❌ Lỗi khi tải CSV: " + err);
+        log.textContent = "❌ Lỗi: " + err.message;
       }
-    });
+    }
   </script>
 </body>
 </html>
