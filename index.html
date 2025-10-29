@@ -2,55 +2,80 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8" />
-  <title>🧠 LINHM3 ToolTest Dashboard</title>
-  <style>
-    body { font-family: sans-serif; text-align: center; margin-top: 50px; }
-    input, select, button { margin: 10px; padding: 8px; }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ToolTest AI BIDV</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
-  <h1>🧠 LINHM3 TOOLTEST</h1>
-  <h3>Chạy kiểm thử AI nội bộ</h3>
+<body class="bg-gray-50 min-h-screen flex flex-col items-center justify-center p-8">
+  <div class="bg-white rounded-xl shadow-lg w-full max-w-lg p-6">
+    <h1 class="text-2xl font-bold mb-4 text-center text-indigo-700">ToolTest AI BIDV</h1>
 
-  <form id="form">
-    <label>Chọn bot:</label>
-    <select id="botSelect" required>
-      <option value="">-- Chọn bot --</option>
-      <option value="hdqt">HĐQT</option>
-      <option value="tin_dung">Tín dụng</option>
-    </select>
-    <br>
-    <label>Upload file Excel:</label>
-    <input type="file" id="fileInput" accept=".xlsx" required>
-    <br>
-    <button type="button" id="runBtn">🚀 Bắt đầu chạy</button>
-  </form>
+    <!-- Upload Excel -->
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-1">📂 Chọn file Excel:</label>
+      <input id="excelFile" type="file" accept=".xlsx" class="w-full border rounded px-3 py-2">
+    </div>
 
-  <p id="status"></p>
+    <!-- Chọn bot -->
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-1">🤖 Chọn bot:</label>
+      <select id="bot" class="w-full border rounded px-3 py-2">
+        <option value="">-- Chọn bot --</option>
+        <option value="hdqt">Hội đồng quản trị (HDQT)</option>
+        <option value="tin_dung">Tín dụng</option>
+      </select>
+    </div>
+
+    <!-- Chọn chức năng -->
+    <div class="mb-4">
+      <label class="block text-gray-700 font-semibold mb-1">⚙️ Chọn chức năng cần chạy:</label>
+      <div class="space-y-2">
+        <label class="flex items-center"><input type="checkbox" value="init_test" class="func mr-2">Init Test</label>
+        <label class="flex items-center"><input type="checkbox" value="get_chatbot_output" class="func mr-2">Get Chatbot Output</label>
+        <label class="flex items-center"><input type="checkbox" value="ref_check" class="func mr-2">Ref Check</label>
+        <label class="flex items-center"><input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">LLM Check (Bone)</label>
+      </div>
+    </div>
+
+    <!-- Nút chạy -->
+    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">🚀 Bắt đầu chạy</button>
+
+    <!-- Kết quả -->
+    <div id="result" class="mt-6 text-sm text-gray-800"></div>
+  </div>
 
   <script>
-  document.getElementById("runBtn").addEventListener("click", async () => {
-    const bot = document.getElementById("botSelect").value;
-    const fileInput = document.getElementById("fileInput");
-    const status = document.getElementById("status");
-    if (!bot || !fileInput.files.length) {
-      alert("Vui lòng chọn bot và upload file!");
-      return;
-    }
+    document.getElementById("runBtn").addEventListener("click", async () => {
+      const fileInput = document.getElementById("excelFile");
+      const bot = document.getElementById("bot").value;
+      const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
+      const resultDiv = document.getElementById("result");
 
-    const formData = new FormData();
-    formData.append("bot", bot);
-    formData.append("file", fileInput.files[0]);
+      if (!fileInput.files.length || !bot || funcs.length === 0) {
+        resultDiv.innerHTML = "⚠️ Vui lòng chọn file Excel, bot và ít nhất một chức năng!";
+        return;
+      }
 
-    status.innerText = "⏳ Đang chạy...";
-    const res = await fetch("http://localhost:5000/run", {
-      method: "POST",
-      body: formData
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      formData.append("bot", bot);
+      formData.append("functions", funcs.join(","));
+
+      resultDiv.innerHTML = "⏳ Đang chạy...";
+
+      try {
+        const res = await fetch("http://127.0.0.1:5000/run", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        resultDiv.innerHTML = res.ok ? `✅ Thành công: ${data.message || "Hoàn tất!"}` :
+                                       `❌ Lỗi: ${data.error || "Không rõ nguyên nhân"}`;
+      } catch (err) {
+        resultDiv.innerHTML = `❌ Kết nối thất bại: ${err}`;
+      }
     });
-
-    const data = await res.json();
-    status.innerText = data.message || data.error || "Xong!";
-  });
   </script>
 </body>
 </html>
