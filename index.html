@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Tool Test AI BIDV + Tải PDF HĐQT</title>
+  <title>Tool Test AI BIDV</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/942/942748.png">
   <style>
     body {
@@ -52,7 +52,7 @@
       display: inline-block;
     }
 
-    select, input[type=file], button {
+    select, input[type=file], button, input[type=text] {
       padding: 8px 12px;
       border-radius: 6px;
       border: 1px solid #ccc;
@@ -95,6 +95,27 @@
       border-radius: 6px;
       padding: 5px 10px;
       cursor: pointer;
+    }
+
+    .progress-container {
+      margin-top: 10px;
+      background: #e9ecef;
+      border-radius: 6px;
+      height: 20px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: #0b5394;
+      color: white;
+      text-align: center;
+      font-size: 12px;
+      line-height: 20px;
+      border-radius: 6px;
+      transition: width 0.2s ease;
     }
 
     footer {
@@ -175,15 +196,24 @@
         <option value="tinhtonghop">03_Tổng hợp & Giám sát</option>
       </select>
 
-      <br>
+      <br><br>
+      <label>📁 Chọn nơi lưu file ZIP:</label><br>
+      <input type="file" id="savePath" webkitdirectory directory mozdirectory multiple style="border:1px solid #ccc; padding:6px;">
+      <br><br>
+
       <button id="btn-download" onclick="downloadPDFs()">📥 Tải PDF</button>
+
+      <!-- progress -->
+      <div class="progress-container">
+        <div class="progress-bar" id="progress-bar">0%</div>
+      </div>
 
       <div id="pdf-log" class="log-box"></div>
     </div>
   </div>
 
   <footer>
-    © BIDV Internal Tool | Designed by LinhHM3 | v1.0
+    © BIDV Internal Tool | Designed by LinhHM3 | v2.0
   </footer>
 
   <script>
@@ -245,7 +275,10 @@
     async function downloadPDFs() {
       const folder = document.getElementById("folder").value;
       const log = document.getElementById("pdf-log");
-      log.textContent = "⏳ Đang xử lý...";
+      const progressBar = document.getElementById("progress-bar");
+      log.textContent = "⏳ Đang tải...";
+      progressBar.style.width = "0%";
+      progressBar.textContent = "0%";
 
       if (!folder) {
         log.textContent = "⚠️ Vui lòng chọn folder cần tải.";
@@ -256,10 +289,7 @@
         const form = new FormData();
         form.append("folder", folder);
 
-        const response = await fetch(`${API_BASE}/download_pdfs`, {
-          method: "POST",
-          body: form
-        });
+        const response = await fetch(`${API_BASE}/download_pdfs`, { method: "POST", body: form });
 
         if (!response.ok) {
           const data = await response.json();
@@ -267,17 +297,40 @@
           return;
         }
 
-        const blob = await response.blob();
+        // Tính % theo dung lượng tải
+        const reader = response.body.getReader();
+        const contentLength = +response.headers.get("Content-Length");
+        let receivedLength = 0;
+        let chunks = [];
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          chunks.push(value);
+          receivedLength += value.length;
+
+          if (contentLength) {
+            const percent = Math.round((receivedLength / contentLength) * 100);
+            progressBar.style.width = percent + "%";
+            progressBar.textContent = percent + "%";
+          }
+        }
+
+        const blob = new Blob(chunks);
+        const savePath = document.getElementById("savePath");
+        let folderName = folder + ".zip";
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = folder + ".zip";
+        a.download = folderName;
         document.body.appendChild(a);
         a.click();
         a.remove();
         window.URL.revokeObjectURL(url);
 
-        log.textContent = "✅ Đã tải xong file " + folder + ".zip";
+        progressBar.style.width = "100%";
+        progressBar.textContent = "100%";
+        log.textContent = "✅ Đã tải xong " + folderName;
       } catch (err) {
         log.textContent = "❌ Lỗi: " + err.message;
       }
