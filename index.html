@@ -46,29 +46,28 @@
       margin-bottom: 15px;
     }
 
-    /* ====== Tool test AI (giữ nguyên style) ====== */
-    #tool-panel {
-      flex: 2;
+    label {
+      font-weight: 500;
+      margin-top: 8px;
+      display: inline-block;
     }
 
-    /* ====== PDF panel ====== */
-    #pdf-section select, #pdf-section button {
+    select, input[type=file], button {
       padding: 8px 12px;
-      font-size: 14px;
       border-radius: 6px;
       border: 1px solid #ccc;
-      margin-right: 8px;
-      margin-bottom: 10px;
+      font-size: 14px;
+      margin: 4px 0;
     }
 
-    #pdf-section button {
+    button {
       background: #0b5394;
       color: white;
       cursor: pointer;
       font-weight: 500;
     }
 
-    #pdf-section button:hover {
+    button:hover {
       background: #073763;
     }
 
@@ -82,6 +81,20 @@
       overflow-y: auto;
       white-space: pre-wrap;
       font-size: 13px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .checkbox-group label {
+      background: #eef3f8;
+      border-radius: 6px;
+      padding: 5px 10px;
+      cursor: pointer;
     }
 
     footer {
@@ -105,21 +118,49 @@
 
   <div class="container">
     <!-- ================================================= -->
-    <!-- 🔹 CỘT 1: TOOL TEST AI BIDV -->
+    <!-- 🔹 CỘT TRÁI: TOOL TEST AI BIDV -->
     <!-- ================================================= -->
     <div id="tool-panel" class="panel">
       <h2>🤖 Tool Test AI BIDV</h2>
 
-      <p><i>(Giữ nguyên khu vực hiện tại của bạn, bảng test-case, input file Excel, các nút “Run”, “Summary”, “Export CSV”...)</i></p>
+      <label>📂 Chọn file Excel:</label><br>
+      <input type="file" id="excelFile"><br>
+      <small>File Excel cần có các cột: id, query, label, citation_no, citation_title</small><br><br>
 
-      <!-- 
-        🔸 Bạn có thể copy toàn bộ HTML/Javascript của bảng cũ vào đây
-        ví dụ: <input type="file">, <select bot>, <button run>, v.v.
-      -->
+      <label>🤖 Chọn bot:</label><br>
+      <select id="bot">
+        <option value="">-- Chọn bot --</option>
+        <option value="hdqt">HĐQT</option>
+        <option value="tin_dung">Tín dụng</option>
+      </select>
+
+      <br><br>
+      <label>🗂 Chọn test đã chạy:</label><br>
+      <select id="testList">
+        <option value="">-- Chưa chọn --</option>
+      </select>
+      <button onclick="loadTests()">🔄 Tải danh sách test</button>
+
+      <br><br>
+      <label>⚙️ Chức năng cần chạy:</label>
+      <div class="checkbox-group">
+        <label><input type="checkbox" value="init_test"> 🧩 Init Test</label>
+        <label><input type="checkbox" value="get_chatbot_output"> 💬 Get Chatbot Output</label>
+        <label><input type="checkbox" value="ref_check"> 🧠 Ref Check</label>
+        <label><input type="checkbox" value="get_llm_check_output"> 🔍 LLM Check (OpenAI)</label>
+        <label><input type="checkbox" value="get_llm_check_bone_output"> 🦴 LLM Check (Bone)</label>
+      </div>
+
+      <br>
+      <button onclick="runTool()">🚀 Bắt đầu chạy</button>
+      <button onclick="exportCSV()">📥 Xuất CSV</button>
+      <button onclick="loadSummary()">📊 Xem tổng kết</button>
+
+      <div id="log" class="log-box"></div>
     </div>
 
     <!-- ================================================= -->
-    <!-- 🔹 CỘT 2: TẢI PDF HĐQT -->
+    <!-- 🔹 CỘT PHẢI: TẢI PDF HĐQT -->
     <!-- ================================================= -->
     <div id="pdf-section" class="panel">
       <h2>📂 Tải PDF HĐQT</h2>
@@ -137,7 +178,7 @@
       <br>
       <button id="btn-download" onclick="downloadPDFs()">📥 Tải PDF</button>
 
-      <div id="log" class="log-box"></div>
+      <div id="pdf-log" class="log-box"></div>
     </div>
   </div>
 
@@ -146,9 +187,64 @@
   </footer>
 
   <script>
+    const API_BASE = "http://127.0.0.1:5000";
+
+    async function loadTests() {
+      const bot = document.getElementById("bot").value;
+      const sel = document.getElementById("testList");
+      sel.innerHTML = "<option>Đang tải...</option>";
+      const res = await fetch(`${API_BASE}/list_tests?bot=${bot}`);
+      const data = await res.json();
+      sel.innerHTML = "";
+      if (!data.status) { sel.innerHTML = "<option>Lỗi tải danh sách</option>"; return; }
+      data.data.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t.test_run_id;
+        opt.textContent = `${t.test_run_id} | ${t.file_name}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    async function runTool() {
+      const bot = document.getElementById("bot").value;
+      const file = document.getElementById("excelFile").files[0];
+      const test_id = document.getElementById("testList").value;
+      const functions = [...document.querySelectorAll(".checkbox-group input:checked")].map(i => i.value).join(",");
+      const log = document.getElementById("log");
+      log.textContent = "⏳ Đang chạy...";
+
+      const form = new FormData();
+      form.append("bot", bot);
+      if (file) form.append("file", file);
+      if (test_id) form.append("test_id", test_id);
+      form.append("functions", functions);
+
+      const res = await fetch(`${API_BASE}/run`, { method: "POST", body: form });
+      const data = await res.json();
+      log.textContent = data.stdout || data.error || "Hoàn tất.";
+    }
+
+    async function exportCSV() {
+      const bot = document.getElementById("bot").value;
+      const test_id = document.getElementById("testList").value;
+      if (!bot || !test_id) { alert("Chọn bot và test_id trước."); return; }
+      window.open(`${API_BASE}/export_csv?bot=${bot}&test_run_id=${test_id}`, "_blank");
+    }
+
+    async function loadSummary() {
+      const bot = document.getElementById("bot").value;
+      const test_id = document.getElementById("testList").value;
+      const log = document.getElementById("log");
+      if (!bot || !test_id) { log.textContent = "⚠️ Chọn bot và test_id trước."; return; }
+
+      const res = await fetch(`${API_BASE}/summary?bot=${bot}&test_run_id=${test_id}`);
+      const data = await res.json();
+      log.textContent = JSON.stringify(data, null, 2);
+    }
+
     async function downloadPDFs() {
       const folder = document.getElementById("folder").value;
-      const log = document.getElementById("log");
+      const log = document.getElementById("pdf-log");
       log.textContent = "⏳ Đang xử lý...";
 
       if (!folder) {
@@ -160,8 +256,7 @@
         const form = new FormData();
         form.append("folder", folder);
 
-        // ⚙️ chỉnh lại nếu Flask backend chạy server khác
-        const response = await fetch("http://127.0.0.1:5000/download_pdfs", {
+        const response = await fetch(`${API_BASE}/download_pdfs`, {
           method: "POST",
           body: form
         });
