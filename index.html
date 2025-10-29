@@ -51,16 +51,32 @@
     <div class="mb-4">
       <label class="block text-gray-700 font-semibold mb-1">⚙️ Chức năng cần chạy:</label>
       <div class="space-y-2">
-        <label class="flex items-center"><input type="checkbox" value="init_test" class="func mr-2">🧩 Init Test - Tạo test mới</label>
-        <label class="flex items-center"><input type="checkbox" value="get_chatbot_output" class="func mr-2">💬 Get Chatbot Output - Lấy response</label>
-        <label class="flex items-center"><input type="checkbox" value="ref_check" class="func mr-2">🧠 Ref Check - Check văn bản tham chiếu</label>
-        <label class="flex items-center"><input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">🔍 LLM Check (Openai) - Check nội dung qua LLM</label>
+        <label class="flex items-center">
+          <input type="checkbox" value="init_test" class="func mr-2">
+          🧩 <b>Init Test</b> – Tạo test mới
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="get_chatbot_output" class="func mr-2">
+          💬 <b>Get Chatbot Output</b> – Lấy phản hồi (response) từ bot
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="ref_check" class="func mr-2">
+          🧠 <b>Ref Check</b> – Kiểm tra văn bản tham chiếu (RAG)
+        </label>
+        <label class="flex items-center">
+          <input type="checkbox" value="get_llm_check_bone_output" class="func mr-2">
+          🔍 <b>LLM Check (OpenAI)</b> – Kiểm tra nội dung trả lời bằng LLM
+        </label>
       </div>
     </div>
 
     <!-- Run -->
-    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">🚀 Bắt đầu chạy</button>
-    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">📥 Xuất CSV</button>
+    <button id="runBtn" class="bg-indigo-600 text-white px-4 py-2 rounded-lg w-full hover:bg-indigo-700">
+      🚀 Bắt đầu chạy
+    </button>
+    <button id="exportCsvBtn" class="bg-green-600 text-white px-4 py-2 rounded-lg w-full hover:bg-green-700 mt-2">
+      📥 Xuất CSV
+    </button>
 
     <!-- Result -->
     <div id="result" class="mt-6 text-sm text-gray-800 whitespace-pre-line border-t pt-3"></div>
@@ -69,7 +85,6 @@
   <script>
     const API_BASE = "http://127.0.0.1:5000";
 
-    // Group danh cho từng bot
     const GROUPS = {
       hdqt: [
         "quanlyruiro", "tuanthuvaphapche", "hoatdonghdqt",
@@ -84,7 +99,7 @@
       ]
     };
 
-    // Load danh sách group theo bot
+    // Load group theo bot
     function loadGroups(bot) {
       const container = document.getElementById("groupContainer");
       const select = document.getElementById("groupSelect");
@@ -102,7 +117,7 @@
       container.classList.remove("hidden");
     }
 
-    // Load danh sách test đã chạy
+    // Load test đã chạy
     async function loadTests() {
       const bot = document.getElementById("bot").value;
       const testList = document.getElementById("testList");
@@ -132,7 +147,7 @@
       loadTests();
     });
 
-    // Run test
+    // Run
     document.getElementById("runBtn").addEventListener("click", async () => {
       const bot = document.getElementById("bot").value;
       const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
@@ -174,7 +189,7 @@
       }
 
       try {
-        const url = `${API_BASE}/export_csv?bot=${bot}&test_id=${testId}`;
+        const url = `${API_BASE}/export_csv?bot=${bot}&test_run_id=${testId}`;
         const res = await fetch(url);
         if (!res.ok) throw new Error("Không thể tải CSV");
         const blob = await res.blob();
@@ -193,4 +208,3 @@
   </script>
 </body>
 </html>
-
