@@ -30,6 +30,14 @@
       </select>
     </div>
 
+    <!-- Group -->
+    <div id="groupContainer" class="mb-4 hidden">
+      <label class="block text-gray-700 font-semibold mb-1">📚 Chọn nhóm tài liệu (Group):</label>
+      <select id="groupSelect" class="w-full border rounded px-3 py-2">
+        <option value="all">-- Chạy toàn bộ group --</option>
+      </select>
+    </div>
+
     <!-- Test cũ -->
     <div class="mb-4">
       <label class="block text-gray-700 font-semibold mb-1">🗂 Chọn test đã chạy:</label>
@@ -61,7 +69,40 @@
   <script>
     const API_BASE = "http://127.0.0.1:5000";
 
-    // === Load danh sách test ===
+    // Group danh cho từng bot
+    const GROUPS = {
+      hdqt: [
+        "quanlyruiro", "tuanthuvaphapche", "hoatdonghdqt",
+        "giamsathieuqua", "chienluocvathitruong"
+      ],
+      tin_dung: [
+        "vbcd_tiente_khoquy", "vbcd_thanhtoan", "vbcdtaichinh", "vbcd_taisan_xdcb",
+        "vbcd_dichvu", "vbcd_quantri_dieuhanh_mohinhtochuc", "vbcd_tindung",
+        "vbcd_quanlyruiro", "vbcdcorebanking", "vbcd_khac", "vbcdcongnghe",
+        "vbcd_nhansu", "vbcdhuydongvon", "vbcd_kdvtt", "vbcd_chamsockhachhang",
+        "vbcd_xulyno_totung_tranhchap", "vbcd_the", "vbcd_phancong_phancap_uyquyen", "vbcdketoan"
+      ]
+    };
+
+    // Load danh sách group theo bot
+    function loadGroups(bot) {
+      const container = document.getElementById("groupContainer");
+      const select = document.getElementById("groupSelect");
+      select.innerHTML = '<option value="all">-- Chạy toàn bộ group --</option>';
+      if (!bot || !GROUPS[bot]) {
+        container.classList.add("hidden");
+        return;
+      }
+      GROUPS[bot].forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g;
+        opt.textContent = g;
+        select.appendChild(opt);
+      });
+      container.classList.remove("hidden");
+    }
+
+    // Load danh sách test đã chạy
     async function loadTests() {
       const bot = document.getElementById("bot").value;
       const testList = document.getElementById("testList");
@@ -85,13 +126,18 @@
     }
 
     document.getElementById("refreshTestsBtn").addEventListener("click", loadTests);
-    document.getElementById("bot").addEventListener("change", loadTests);
+    document.getElementById("bot").addEventListener("change", e => {
+      const bot = e.target.value;
+      loadGroups(bot);
+      loadTests();
+    });
 
-    // === Run test ===
+    // Run test
     document.getElementById("runBtn").addEventListener("click", async () => {
       const bot = document.getElementById("bot").value;
       const funcs = Array.from(document.querySelectorAll(".func:checked")).map(el => el.value);
       const testId = document.getElementById("testList").value;
+      const group = document.getElementById("groupSelect").value;
       const file = document.getElementById("excelFile").files[0];
       const resultDiv = document.getElementById("result");
 
@@ -103,6 +149,7 @@
       const formData = new FormData();
       formData.append("bot", bot);
       formData.append("functions", funcs.join(","));
+      if (group && group !== "all") formData.append("group", group);
       if (file) formData.append("file", file);
       if (testId) formData.append("test_id", testId);
 
@@ -117,7 +164,7 @@
       }
     });
 
-    // === Export CSV ===
+    // Export CSV
     document.getElementById("exportCsvBtn").addEventListener("click", async () => {
       const bot = document.getElementById("bot").value;
       const testId = document.getElementById("testList").value;
