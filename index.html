@@ -5,133 +5,22 @@
   <title>Tool Test AI BIDV</title>
   <link rel="icon" href="https://cdn-icons-png.flaticon.com/512/942/942748.png">
   <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f8fafc;
-      color: #333;
-      margin: 0;
-      padding: 0;
-    }
-
-    header {
-      background: linear-gradient(90deg, #0b5394, #073763);
-      color: white;
-      padding: 20px;
-      text-align: center;
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-
-    .container {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-      padding: 30px;
-    }
-
-    .panel {
-      flex: 1;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      padding: 20px;
-      min-height: 400px;
-    }
-
-    h2 {
-      color: #0b5394;
-      border-bottom: 2px solid #0b5394;
-      padding-bottom: 8px;
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-weight: 500;
-      margin-top: 8px;
-      display: inline-block;
-    }
-
-    select, input[type=file], button, input[type=text] {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-      margin: 4px 0;
-    }
-
-    button {
-      background: #0b5394;
-      color: white;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    button:hover {
-      background: #073763;
-    }
-
-    .log-box {
-      margin-top: 15px;
-      padding: 10px;
-      height: 150px;
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      background: #f8f9fa;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      font-size: 13px;
-    }
-
-    .checkbox-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
-    .checkbox-group label {
-      background: #eef3f8;
-      border-radius: 6px;
-      padding: 5px 10px;
-      cursor: pointer;
-    }
-
-    .progress-container {
-      margin-top: 10px;
-      background: #e9ecef;
-      border-radius: 6px;
-      height: 20px;
-      width: 100%;
-      overflow: hidden;
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background-color: #0b5394;
-      color: white;
-      text-align: center;
-      font-size: 12px;
-      line-height: 20px;
-      border-radius: 6px;
-      transition: width 0.2s ease;
-    }
-
-    footer {
-      text-align: center;
-      padding: 10px;
-      background: #0b5394;
-      color: white;
-      font-size: 13px;
-    }
-
-    @media (max-width: 900px) {
-      .container {
-        flex-direction: column;
-      }
-    }
+    body { font-family: "Segoe UI", sans-serif; background-color: #f8fafc; color: #333; margin: 0; padding: 0; }
+    header { background: linear-gradient(90deg, #0b5394, #073763); color: white; padding: 20px; text-align: center; font-size: 22px; font-weight: 600; letter-spacing: 0.5px; }
+    .container { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; padding: 30px; }
+    .panel { flex: 1; background: #fff; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 20px; min-height: 400px; }
+    h2 { color: #0b5394; border-bottom: 2px solid #0b5394; padding-bottom: 8px; margin-bottom: 15px; }
+    label { font-weight: 500; margin-top: 8px; display: inline-block; }
+    select, input[type=file], button, input[type=text] { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; margin: 4px 0; }
+    button { background: #0b5394; color: white; cursor: pointer; font-weight: 500; }
+    button:hover { background: #073763; }
+    .log-box { margin-top: 15px; padding: 10px; height: 150px; border: 1px solid #ddd; border-radius: 6px; background: #f8f9fa; overflow-y: auto; white-space: pre-wrap; font-size: 13px; }
+    .checkbox-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+    .checkbox-group label { background: #eef3f8; border-radius: 6px; padding: 5px 10px; cursor: pointer; }
+    .progress-container { margin-top: 10px; background: #e9ecef; border-radius: 6px; height: 20px; width: 100%; overflow: hidden; }
+    .progress-bar { height: 100%; width: 0%; background-color: #0b5394; color: white; text-align: center; font-size: 12px; line-height: 20px; border-radius: 6px; transition: width 0.2s ease; }
+    footer { text-align: center; padding: 10px; background: #0b5394; color: white; font-size: 13px; }
+    @media (max-width: 900px) { .container { flex-direction: column; } }
   </style>
 </head>
 
@@ -198,13 +87,8 @@
       </select>
 
       <br><br>
-      <label>📁 Chọn nơi lưu file ZIP:</label><br>
-      <input type="file" id="savePath" webkitdirectory directory mozdirectory multiple style="border:1px solid #ccc; padding:6px;">
-      <br><br>
-
       <button id="btn-download" onclick="downloadPDFs()">📥 Tải PDF</button>
 
-      <!-- progress -->
       <div class="progress-container">
         <div class="progress-bar" id="progress-bar">0%</div>
       </div>
@@ -214,11 +98,19 @@
   </div>
 
   <footer>
-    © BIDV Internal Tool | Designed by LinhHM3 | v2.0
+    © BIDV Internal Tool | Designed by LinhHM3 | v2.1 (GitHub Pages)
   </footer>
 
   <script>
-    const API_BASE = "http://127.0.0.1:5000";
+    // 🧠 Tự động chọn API backend phù hợp
+    const DEFAULT_BACKEND = "http://10.21.19.43:5000"; // Flask nội bộ BIDV
+    const LOCAL_BACKEND = "http://127.0.0.1:5000";
+
+    // Nếu chạy local (localhost), dùng local backend
+    // Nếu chạy trên GitHub Pages (https://linkhoang19931-hub.github.io/...), dùng IP nội bộ
+    const API_BASE = location.hostname.includes("github.io") ? DEFAULT_BACKEND : LOCAL_BACKEND;
+
+    console.log("🌐 API_BASE =", API_BASE);
 
     async function loadTests() {
       const bot = document.getElementById("bot").value;
@@ -289,7 +181,6 @@
       try {
         const form = new FormData();
         form.append("folder", folder);
-
         const response = await fetch(`${API_BASE}/download_pdfs`, { method: "POST", body: form });
 
         if (!response.ok) {
@@ -298,18 +189,15 @@
           return;
         }
 
-        // Hiển thị % tải theo dung lượng thực
         const reader = response.body.getReader();
         const contentLength = +response.headers.get("Content-Length");
-        let receivedLength = 0;
-        let chunks = [];
+        let receivedLength = 0, chunks = [];
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
           chunks.push(value);
           receivedLength += value.length;
-
           if (contentLength) {
             const percent = Math.round((receivedLength / contentLength) * 100);
             progressBar.style.width = percent + "%";
